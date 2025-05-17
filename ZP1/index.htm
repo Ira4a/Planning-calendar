@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="cs">
+	<head>
+		<meta charset="UTF-8"/> 
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>Formulář</title>
+		<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+		<style>
+			* {
+			  box-sizing: border-box;
+			  outline: none;
+			}
+			body {
+			  height: 100vh;
+			  border: 10px solid blue;
+			}
+			.flex-container {
+			  display: flex;
+			  justify-content: center;
+			  padding: 90px 0;
+			}
+			h2 {
+			  font-family: "Vast Shadow", serif;
+			  font-weight: 400;
+			  font-style: normal;
+			  font-size: 35px;
+			}
+			form {
+			  padding: 0 50px;
+			  display: inline-block;
+			}
+			input {
+			  display: block;
+			  width: 300px;
+			  padding: 5px 10px;
+			  margin-top: 10px;
+			  color: blue;
+			  border: 1px solid red;
+			}
+			input[type="text"], input[type="email"], input[type="password"] {
+			  font-family: "Cormorant Garamond", serif;
+			  font-size: 20px;
+			  font-weight: 700;
+			  font-style: normal;
+			}
+			a {
+			  color: blue;
+			  transition: ease 500ms;
+			}
+			a:hover {
+			  color: red;
+			}
+			.sub {
+			  background: transparent;
+			  margin: 15px 0 10px 0;
+			  padding: 5px;
+			  cursor: pointer;
+			  font-family: "Vast Shadow", serif;
+			  font-weight: 400;
+			  font-style: normal;
+			  color: blue;
+			  border: 3px outset blue;
+			  transition: linear 1s;
+			}
+			.sub:hover {
+			  color: red;
+			  border: 3px inset blue;
+			}
+		</style>
+	</head>
+	<body>
+	  <div class="flex-container">
+		<form class="login">
+		  <h2>Přihlášení</h2>
+		  <input type="text" placeholder="Uživatelské jméno" class="login-username" required>
+		  <input type="password" placeholder="Heslo" class="login-password" required>
+		  <input class="sub" type="submit" value="Přihlásit"> 
+		  <a href="#" class="reset-password">Resetovat heslo</a>
+		</form>
+		<form class="signup">
+		  <h2>Zaregistrovat se</h2>
+		  <input type="text" placeholder="Jméno" required>
+		  <input type="text" placeholder="Příjmení" required>
+		  <input type="email" placeholder="E-mail" required>
+		  <input type="text" placeholder="Uživatelské jméno" required>
+		  <input type="password" placeholder="Heslo" required>
+		  <input class="sub" type="submit" value="Zaregistrovat">
+		</form>
+	  </div> 
+
+	  <script>
+		function getUsers() {
+		  return JSON.parse(localStorage.getItem('users') || '[]');
+		}
+
+		function saveUsers(users) {
+		  localStorage.setItem('users', JSON.stringify(users));
+		}
+
+		  // Přihlášení
+  		document.querySelector('.login').addEventListener('submit', function(event) {
+    		event.preventDefault();
+    		const username = this.querySelector('.login-username').value;
+    		const password = this.querySelector('.login-password').value;
+
+    		const users = getUsers();
+    		const user = users.find(u => u.username === username && u.password === password && u.verified);
+
+    		if (user) {
+      		localStorage.setItem('username', username);
+      		window.location.href = 'calendar.php'; 
+    		} else {
+      		alert("Neplatné údaje nebo nepotvrzený účet.");
+    		}
+  		});
+
+		// Registrace
+		document.querySelector('.signup').addEventListener('submit', function(event) {
+		  event.preventDefault();
+
+		  const inputs = this.querySelectorAll('input');
+		  const email = inputs[2].value;
+		  const username = inputs[3].value;
+		  const password = inputs[4].value;
+
+		  let users = getUsers();
+		  if (users.some(u => u.email === email || u.username === username)) {
+			alert("Email nebo uživatelské jméno již existuje.");
+			return;
+		  }
+
+		  users.push({ username, email, password, verified: false });
+		  saveUsers(users);
+
+		  alert(`Potvrzovací email byl odeslán na ${email}. Klikněte na OK pro potvrzení.`);
+
+		  const index = users.findIndex(u => u.email === email);
+		  users[index].verified = true;
+		  saveUsers(users);
+
+		  alert("Registrace potvrzena. Nyní se můžete přihlásit.");
+		});
+
+		// Reset hesla
+		document.querySelector('.reset-password').addEventListener('click', function(e) {
+		  e.preventDefault();
+
+		  const email = prompt('Zadejte svůj email:');
+		  const username = prompt('Zadejte své uživatelské jméno:');
+		  let users = getUsers();
+
+		  const userIndex = users.findIndex(u => u.email === email && u.username === username);
+
+		  if (userIndex !== -1) {
+			const newPassword = prompt('Zadejte nové heslo:');
+			if (newPassword && newPassword.length >= 6) {
+			  users[userIndex].password = newPassword;
+			  saveUsers(users);
+			  alert('Heslo bylo úspěšně změněno.');
+			} else {
+			  alert('Heslo musí mít alespoň 6 znaků.');
+			}
+		  } else {
+			alert('Email nebo uživatelské jméno nebyly nalezeny.');
+		  }
+		});
+	  </script>
+	</body>
+</html>
